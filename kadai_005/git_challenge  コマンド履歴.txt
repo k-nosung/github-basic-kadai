@@ -9,6 +9,7 @@ PS C:\Users\a\git_challenge> git commit -m "herro_world.txt追加"
  create mode 100644 hello_world.txt/hello_world.txt
  PS C:\Users\a\git_challenge> git commit -m "日本語訳を追加"
 [main f0a72cd] 日本語訳を追加
- 
+
+PS C:\Users\a\git_challenge> git log --oneline                   
 f0a72cd (HEAD -> main) 日本語訳を追加
-d870e13 herro_world.txt追加
+d870e13 最初のコミット
