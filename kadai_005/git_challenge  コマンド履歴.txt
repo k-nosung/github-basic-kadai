@@ -1,19 +1,14 @@
-step1 PS C:\Users\a> cd git_challenge  herro_world.txt追加
-
-step2 PS C:\Users\a\git_challenge> mkdir hello_world.txt
-
-
-    ディレクトリ: C:\Users\a\git_challenge
-
-step3
- PS C:\Users\a\git_challenge> git commit -m "herro_world.txt追加"
+PS C:\Users\a\> mkdir git_challenge
+PS C:\Users\a\> cd git_challenge 
+PS C:\Users\a\git_challenge> mkdir hello_world.txt
+C:\Users\a\git_challenge> git init
+PS C:\Users\a\git_challenge> git add hello_world.txt
+PS C:\Users\a\git_challenge> git commit -m "herro_world.txt追加"
 [main (root-commit) d870e13] herro_world.txt追加
  1 file changed, 1 insertion(+)
  create mode 100644 hello_world.txt/hello_world.txt
-
  PS C:\Users\a\git_challenge> git commit -m "日本語訳を追加"
 [main f0a72cd] 日本語訳を追加
-
-step4 
+ 
 f0a72cd (HEAD -> main) 日本語訳を追加
 d870e13 herro_world.txt追加
