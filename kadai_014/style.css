@@ -1,0 +1,34 @@
+.text-pink{
+    color: rgb(255, 192, 203) ;
+}
+.text-skybule{
+    color: skyblue;
+}
+head{
+    text-align: center;
+}
+.child {
+    font-weight: bold;
+}
+p{
+    text-align:center
+}
+h1{
+    font-size: 2.5rem;
+    text-align:center;
+    letter-spacing: 1.2em;
+    border-bottom: solid 3px black;
+    text-shadow: 2px 2px gray;
+
+}
+body{
+    font-size: 1.25rem;
+    text-align:center;
+    font-family: "Arial", "Meiryo", sans-serif;
+}
+.josefin-sans-uniquifier {
+    font-family: "Josefin Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: weight;
+    font-style: normal;
+  }
