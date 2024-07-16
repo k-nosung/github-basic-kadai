@@ -7,7 +7,7 @@
 head{
     text-align: center;
 }
-.child {
+ #child > p {
     font-weight: bold;
 }
 p{
@@ -22,9 +22,11 @@ h1{
 
 }
 body{
-    font-size: 1.25rem;
     text-align:center;
     font-family: "Arial", "Meiryo", sans-serif;
+}
+html{
+    font-size: 1.25rem;
 }
 .josefin-sans-uniquifier {
     font-family: "Josefin Sans", sans-serif;
