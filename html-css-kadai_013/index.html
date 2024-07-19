@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <body>
+     <header>
+        <title>13章課題</title>
+        <meta name="description"content="このページは13章の課題です。">
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style.css">
+        <a href="index.html" id="logo"><img src="images/logo.png" alt="トップページに戻る"></a>
+        <nav id="nav-pc">
+            <a href="index.html#concept">CONCEPT</a>
+            <a href="product.html#product">PRODUCT</a>
+            <a href="index.html#contact">CONTACT</a>
+        </nav>
+       <img id="menu-sp" src="images/button-menu.png" alt="ナビゲーションを開く" onclick="document.getElementById('nav-sp').style.display = 'block'"></img>
+       <nav id="nav-sp">
+        <img id="close" src="images/button-close.png" alt="ナビゲーションを閉じる" onclick="document.getElementById('nav-sp').style.display = 'none'"></img>
+        <a id="logo-sp" href="index.html" onclick="document.getElementById('nav-sp').style.display = 'none'">
+        <img src="images/logo-sp.png" alt="トップページに戻る"></img></a>
+        <a class="menu" href="index.html#concept" alt="CONCEPT" onclick=
+        "document.getElementById('nav-sp').style.display = 'none'">CONCEPT</a>
+        <a class="menu" href="index.html#product" alt="PRODUCT" onclick=
+        "document.getElementById('nav-sp').style.display = 'none'">PRODUCT</a>
+        <a class="menu" href="index.html#contact" alt="CONTACT" onclick=
+        "document.getElementById('nav-sp').style.display = 'none'">CONTACT</a>
+       </nav>
+     </header>
+       <main>
+          <article>
+            <section id="main-visual">
+                <div id="main-message">
+                    <h1>Organic Cafe</h1>
+                    <p>自家焙煎コーヒーが買えるお店</p>
+                </div>
+                <img src="images/main-image.jpg">
+            </section>
+          </article>
+         </main>
+  </body>
+</html>
