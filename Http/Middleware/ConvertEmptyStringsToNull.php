@@ -4,7 +4,7 @@ namespace Illuminate\Foundation\Http\Middleware;
 
 use Closure;
 
-class TrimStrings extends TransformsRequest
+class ConvertEmptyStringsToNull extends TransformsRequest
 {
     /**
      * All of the registered skip callbacks.
@@ -12,15 +12,6 @@ class TrimStrings extends TransformsRequest
      * @var array
      */
     protected static $skipCallbacks = [];
-
-    /**
-     * The attributes that should not be trimmed.
-     *
-     * @var array<int, string>
-     */
-    protected $except = [
-        //
-    ];
 
     /**
      * Handle an incoming request.
@@ -49,11 +40,7 @@ class TrimStrings extends TransformsRequest
      */
     protected function transform($key, $value)
     {
-        if (in_array($key, $this->except, true) || ! is_string($value)) {
-            return $value;
-        }
-
-        return preg_replace('~^[\s\x{FEFF}\x{200B}]+|[\s\x{FEFF}\x{200B}]+$~u', '', $value) ?? trim($value);
+        return $value === '' ? null : $value;
     }
 
     /**
