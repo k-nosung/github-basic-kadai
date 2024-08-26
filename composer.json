@@ -1,13 +1,12 @@
 {
-    "name": "illuminate/database",
-    "description": "The Illuminate Database package.",
+    "name": "illuminate/http",
+    "description": "The Illuminate Http package.",
     "license": "MIT",
     "homepage": "https://laravel.com",
     "support": {
         "issues": "https://github.com/laravel/framework/issues",
         "source": "https://github.com/laravel/framework"
     },
-    "keywords": ["laravel", "database", "sql", "orm"],
     "authors": [
         {
             "name": "Taylor Otwell",
@@ -16,37 +15,30 @@
     ],
     "require": {
         "php": "^8.1",
-        "ext-pdo": "*",
-        "brick/math": "^0.9.3|^0.10.2|^0.11|^0.12",
+        "ext-filter": "*",
+        "fruitcake/php-cors": "^1.2",
+        "guzzlehttp/uri-template": "^1.0",
         "illuminate/collections": "^10.0",
-        "illuminate/container": "^10.0",
-        "illuminate/contracts": "^10.0",
         "illuminate/macroable": "^10.0",
-        "illuminate/support": "^10.0"
+        "illuminate/session": "^10.0",
+        "illuminate/support": "^10.0",
+        "symfony/http-foundation": "^6.4",
+        "symfony/http-kernel": "^6.2",
+        "symfony/mime": "^6.2"
     },
     "autoload": {
         "psr-4": {
-            "Illuminate\\Database\\": ""
+            "Illuminate\\Http\\": ""
         }
+    },
+    "suggest": {
+        "ext-gd": "Required to use Illuminate\\Http\\Testing\\FileFactory::image().",
+        "guzzlehttp/guzzle": "Required to use the HTTP Client (^7.5)."
     },
     "extra": {
         "branch-alias": {
             "dev-master": "10.x-dev"
         }
-    },
-    "conflict": {
-        "carbonphp/carbon-doctrine-types": ">=3.0",
-        "doctrine/dbal": ">=4.0"
-    },
-    "suggest": {
-        "ext-filter": "Required to use the Postgres database driver.",
-        "doctrine/dbal": "Required to rename columns and drop SQLite columns (^3.5.1).",
-        "fakerphp/faker": "Required to use the eloquent factory builder (^1.21).",
-        "illuminate/console": "Required to use the database commands (^10.0).",
-        "illuminate/events": "Required to use the observers with Eloquent (^10.0).",
-        "illuminate/filesystem": "Required to use the migrations (^10.0).",
-        "illuminate/pagination": "Required to paginate the result set (^10.0).",
-        "symfony/finder": "Required to use Eloquent model factories (^6.2)."
     },
     "config": {
         "sort-packages": true
