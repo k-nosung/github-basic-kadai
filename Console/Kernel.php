@@ -1,27 +1,64 @@
 <?php
 
-namespace App\Console;
+namespace Illuminate\Contracts\Console;
 
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-
-class Kernel extends ConsoleKernel
+interface Kernel
 {
     /**
-     * Define the application's command schedule.
+     * Bootstrap the application for artisan commands.
+     *
+     * @return void
      */
-    protected function schedule(Schedule $schedule): void
-    {
-        // $schedule->command('inspire')->hourly();
-    }
+    public function bootstrap();
 
     /**
-     * Register the commands for the application.
+     * Handle an incoming console command.
+     *
+     * @param  \Symfony\Component\Console\Input\InputInterface  $input
+     * @param  \Symfony\Component\Console\Output\OutputInterface|null  $output
+     * @return int
      */
-    protected function commands(): void
-    {
-        $this->load(__DIR__.'/Commands');
+    public function handle($input, $output = null);
 
-        require base_path('routes/console.php');
-    }
+    /**
+     * Run an Artisan console command by name.
+     *
+     * @param  string  $command
+     * @param  array  $parameters
+     * @param  \Symfony\Component\Console\Output\OutputInterface|null  $outputBuffer
+     * @return int
+     */
+    public function call($command, array $parameters = [], $outputBuffer = null);
+
+    /**
+     * Queue an Artisan console command by name.
+     *
+     * @param  string  $command
+     * @param  array  $parameters
+     * @return \Illuminate\Foundation\Bus\PendingDispatch
+     */
+    public function queue($command, array $parameters = []);
+
+    /**
+     * Get all of the commands registered with the console.
+     *
+     * @return array
+     */
+    public function all();
+
+    /**
+     * Get the output for the last run command.
+     *
+     * @return string
+     */
+    public function output();
+
+    /**
+     * Terminate the application.
+     *
+     * @param  \Symfony\Component\Console\Input\InputInterface  $input
+     * @param  int  $status
+     * @return void
+     */
+    public function terminate($input, $status);
 }
