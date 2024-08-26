@@ -1,6 +1,6 @@
 {
-    "name": "illuminate/http",
-    "description": "The Illuminate Http package.",
+    "name": "illuminate/queue",
+    "description": "The Illuminate Queue package.",
     "license": "MIT",
     "homepage": "https://laravel.com",
     "support": {
@@ -15,30 +15,37 @@
     ],
     "require": {
         "php": "^8.1",
-        "ext-filter": "*",
-        "fruitcake/php-cors": "^1.2",
-        "guzzlehttp/uri-template": "^1.0",
         "illuminate/collections": "^10.0",
-        "illuminate/macroable": "^10.0",
-        "illuminate/session": "^10.0",
+        "illuminate/console": "^10.0",
+        "illuminate/container": "^10.0",
+        "illuminate/contracts": "^10.0",
+        "illuminate/database": "^10.0",
+        "illuminate/filesystem": "^10.0",
+        "illuminate/pipeline": "^10.0",
         "illuminate/support": "^10.0",
-        "symfony/http-foundation": "^6.4",
-        "symfony/http-kernel": "^6.2",
-        "symfony/mime": "^6.2"
+        "laravel/serializable-closure": "^1.2.2",
+        "ramsey/uuid": "^4.7",
+        "symfony/process": "^6.2"
     },
     "autoload": {
         "psr-4": {
-            "Illuminate\\Http\\": ""
+            "Illuminate\\Queue\\": ""
         }
-    },
-    "suggest": {
-        "ext-gd": "Required to use Illuminate\\Http\\Testing\\FileFactory::image().",
-        "guzzlehttp/guzzle": "Required to use the HTTP Client (^7.5)."
     },
     "extra": {
         "branch-alias": {
             "dev-master": "10.x-dev"
         }
+    },
+    "suggest": {
+        "ext-pdo": "Required to use the database queue worker.",
+        "ext-filter": "Required to use the SQS queue worker.",
+        "ext-mbstring": "Required to use the database failed job providers.",
+        "ext-pcntl": "Required to use all features of the queue worker.",
+        "ext-posix": "Required to use all features of the queue worker.",
+        "aws/aws-sdk-php": "Required to use the SQS queue driver and DynamoDb failed job storage (^3.235.5).",
+        "illuminate/redis": "Required to use the Redis queue driver (^10.0).",
+        "pda/pheanstalk": "Required to use the Beanstalk queue driver (^4.0)."
     },
     "config": {
         "sort-packages": true
