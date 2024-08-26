@@ -1,28 +1,29 @@
 <?php
 
-namespace Illuminate\Database\Capsule;
+namespace Illuminate\Queue\Capsule;
 
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Database\Connectors\ConnectionFactory;
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Eloquent\Model as Eloquent;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Queue\QueueServiceProvider;
 use Illuminate\Support\Traits\CapsuleManagerTrait;
-use PDO;
 
+/**
+ * @mixin \Illuminate\Queue\QueueManager
+ * @mixin \Illuminate\Contracts\Queue\Queue
+ */
 class Manager
 {
     use CapsuleManagerTrait;
 
     /**
-     * The database manager instance.
+     * The queue manager instance.
      *
-     * @var \Illuminate\Database\DatabaseManager
+     * @var \Illuminate\Queue\QueueManager
      */
     protected $manager;
 
     /**
-     * Create a new database capsule manager.
+     * Create a new queue capsule manager.
      *
      * @param  \Illuminate\Container\Container|null  $container
      * @return void
@@ -31,43 +32,53 @@ class Manager
     {
         $this->setupContainer($container ?: new Container);
 
-        // Once we have the container setup, we will setup the default configuration
-        // options in the container "config" binding. This will make the database
-        // manager work correctly out of the box without extreme configuration.
+        // Once we have the container setup, we will set up the default configuration
+        // options in the container "config" bindings. This'll just make the queue
+        // manager behave correctly since all the correct bindings are in place.
         $this->setupDefaultConfiguration();
 
         $this->setupManager();
+
+        $this->registerConnectors();
     }
 
     /**
-     * Setup the default database configuration options.
+     * Setup the default queue configuration options.
      *
      * @return void
      */
     protected function setupDefaultConfiguration()
     {
-        $this->container['config']['database.fetch'] = PDO::FETCH_OBJ;
-
-        $this->container['config']['database.default'] = 'default';
+        $this->container['config']['queue.default'] = 'default';
     }
 
     /**
-     * Build the database manager instance.
+     * Build the queue manager instance.
      *
      * @return void
      */
     protected function setupManager()
     {
-        $factory = new ConnectionFactory($this->container);
+        $this->manager = new QueueManager($this->container);
+    }
 
-        $this->manager = new DatabaseManager($this->container, $factory);
+    /**
+     * Register the default connectors that the component ships with.
+     *
+     * @return void
+     */
+    protected function registerConnectors()
+    {
+        $provider = new QueueServiceProvider($this->container);
+
+        $provider->registerConnectors($this->manager);
     }
 
     /**
      * Get a connection instance from the global manager.
      *
      * @param  string|null  $connection
-     * @return \Illuminate\Database\Connection
+     * @return \Illuminate\Contracts\Queue\Queue
      */
     public static function connection($connection = null)
     {
@@ -75,34 +86,53 @@ class Manager
     }
 
     /**
-     * Get a fluent query builder instance.
+     * Push a new job onto the queue.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
-     * @param  string|null  $as
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
      * @param  string|null  $connection
-     * @return \Illuminate\Database\Query\Builder
+     * @return mixed
      */
-    public static function table($table, $as = null, $connection = null)
+    public static function push($job, $data = '', $queue = null, $connection = null)
     {
-        return static::$instance->connection($connection)->table($table, $as);
+        return static::$instance->connection($connection)->push($job, $data, $queue);
     }
 
     /**
-     * Get a schema builder instance.
+     * Push a new an array of jobs onto the queue.
      *
+     * @param  array  $jobs
+     * @param  mixed  $data
+     * @param  string|null  $queue
      * @param  string|null  $connection
-     * @return \Illuminate\Database\Schema\Builder
+     * @return mixed
      */
-    public static function schema($connection = null)
+    public static function bulk($jobs, $data = '', $queue = null, $connection = null)
     {
-        return static::$instance->connection($connection)->getSchemaBuilder();
+        return static::$instance->connection($connection)->bulk($jobs, $data, $queue);
+    }
+
+    /**
+     * Push a new job onto the queue after (n) seconds.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int  $delay
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @param  string|null  $connection
+     * @return mixed
+     */
+    public static function later($delay, $job, $data = '', $queue = null, $connection = null)
+    {
+        return static::$instance->connection($connection)->later($delay, $job, $data, $queue);
     }
 
     /**
      * Get a registered connection instance.
      *
      * @param  string|null  $name
-     * @return \Illuminate\Database\Connection
+     * @return \Illuminate\Contracts\Queue\Queue
      */
     public function getConnection($name = null)
     {
@@ -118,74 +148,29 @@ class Manager
      */
     public function addConnection(array $config, $name = 'default')
     {
-        $connections = $this->container['config']['database.connections'];
-
-        $connections[$name] = $config;
-
-        $this->container['config']['database.connections'] = $connections;
+        $this->container['config']["queue.connections.{$name}"] = $config;
     }
 
     /**
-     * Bootstrap Eloquent so it is ready for usage.
+     * Get the queue manager instance.
      *
-     * @return void
+     * @return \Illuminate\Queue\QueueManager
      */
-    public function bootEloquent()
-    {
-        Eloquent::setConnectionResolver($this->manager);
-
-        // If we have an event dispatcher instance, we will go ahead and register it
-        // with the Eloquent ORM, allowing for model callbacks while creating and
-        // updating "model" instances; however, it is not necessary to operate.
-        if ($dispatcher = $this->getEventDispatcher()) {
-            Eloquent::setEventDispatcher($dispatcher);
-        }
-    }
-
-    /**
-     * Set the fetch mode for the database connections.
-     *
-     * @param  int  $fetchMode
-     * @return $this
-     */
-    public function setFetchMode($fetchMode)
-    {
-        $this->container['config']['database.fetch'] = $fetchMode;
-
-        return $this;
-    }
-
-    /**
-     * Get the database manager instance.
-     *
-     * @return \Illuminate\Database\DatabaseManager
-     */
-    public function getDatabaseManager()
+    public function getQueueManager()
     {
         return $this->manager;
     }
 
     /**
-     * Get the current event dispatcher instance.
+     * Pass dynamic instance methods to the manager.
      *
-     * @return \Illuminate\Contracts\Events\Dispatcher|null
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
      */
-    public function getEventDispatcher()
+    public function __call($method, $parameters)
     {
-        if ($this->container->bound('events')) {
-            return $this->container['events'];
-        }
-    }
-
-    /**
-     * Set the event dispatcher instance to be used by connections.
-     *
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $dispatcher
-     * @return void
-     */
-    public function setEventDispatcher(Dispatcher $dispatcher)
-    {
-        $this->container->instance('events', $dispatcher);
+        return $this->manager->$method(...$parameters);
     }
 
     /**

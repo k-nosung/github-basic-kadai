@@ -1,38 +1,39 @@
 <?php
 
-namespace Illuminate\Database\Console;
+namespace Illuminate\Queue\Console;
 
+use Illuminate\Console\Command;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Database\ConnectionResolverInterface;
-use Illuminate\Database\Events\DatabaseBusy;
-use Illuminate\Support\Composer;
+use Illuminate\Contracts\Queue\Factory;
+use Illuminate\Queue\Events\QueueBusy;
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'db:monitor')]
-class MonitorCommand extends DatabaseInspectionCommand
+#[AsCommand(name: 'queue:monitor')]
+class MonitorCommand extends Command
 {
     /**
-     * The name and signature of the console command.
+     * The console command name.
      *
      * @var string
      */
-    protected $signature = 'db:monitor
-                {--databases= : The database connections to monitor}
-                {--max= : The maximum number of connections that can be open before an event is dispatched}';
+    protected $signature = 'queue:monitor
+                       {queues : The names of the queues to monitor}
+                       {--max=1000 : The maximum number of jobs that can be on the queue before an event is dispatched}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Monitor the number of connections on the specified database';
+    protected $description = 'Monitor the size of the specified queues';
 
     /**
-     * The connection resolver instance.
+     * The queue manager instance.
      *
-     * @var \Illuminate\Database\ConnectionResolverInterface
+     * @var \Illuminate\Contracts\Queue\Factory
      */
-    protected $connection;
+    protected $manager;
 
     /**
      * The events dispatcher instance.
@@ -42,17 +43,17 @@ class MonitorCommand extends DatabaseInspectionCommand
     protected $events;
 
     /**
-     * Create a new command instance.
+     * Create a new queue monitor command.
      *
-     * @param  \Illuminate\Database\ConnectionResolverInterface  $connection
+     * @param  \Illuminate\Contracts\Queue\Factory  $manager
      * @param  \Illuminate\Contracts\Events\Dispatcher  $events
-     * @param  \Illuminate\Support\Composer  $composer
+     * @return void
      */
-    public function __construct(ConnectionResolverInterface $connection, Dispatcher $events, Composer $composer)
+    public function __construct(Factory $manager, Dispatcher $events)
     {
-        parent::__construct($composer);
+        parent::__construct();
 
-        $this->connection = $connection;
+        $this->manager = $manager;
         $this->events = $events;
     }
 
@@ -63,78 +64,80 @@ class MonitorCommand extends DatabaseInspectionCommand
      */
     public function handle()
     {
-        $databases = $this->parseDatabases($this->option('databases'));
+        $queues = $this->parseQueues($this->argument('queues'));
 
-        $this->displayConnections($databases);
+        $this->displaySizes($queues);
 
-        if ($this->option('max')) {
-            $this->dispatchEvents($databases);
-        }
+        $this->dispatchEvents($queues);
     }
 
     /**
-     * Parse the database into an array of the connections.
+     * Parse the queues into an array of the connections and queues.
      *
-     * @param  string  $databases
+     * @param  string  $queues
      * @return \Illuminate\Support\Collection
      */
-    protected function parseDatabases($databases)
+    protected function parseQueues($queues)
     {
-        return collect(explode(',', $databases))->map(function ($database) {
-            if (! $database) {
-                $database = $this->laravel['config']['database.default'];
+        return collect(explode(',', $queues))->map(function ($queue) {
+            [$connection, $queue] = array_pad(explode(':', $queue, 2), 2, null);
+
+            if (! isset($queue)) {
+                $queue = $connection;
+                $connection = $this->laravel['config']['queue.default'];
             }
 
-            $maxConnections = $this->option('max');
-
             return [
-                'database' => $database,
-                'connections' => $connections = $this->getConnectionCount($this->connection->connection($database)),
-                'status' => $maxConnections && $connections >= $maxConnections ? '<fg=yellow;options=bold>ALERT</>' : '<fg=green;options=bold>OK</>',
+                'connection' => $connection,
+                'queue' => $queue,
+                'size' => $size = $this->manager->connection($connection)->size($queue),
+                'status' => $size >= $this->option('max') ? '<fg=yellow;options=bold>ALERT</>' : '<fg=green;options=bold>OK</>',
             ];
         });
     }
 
     /**
-     * Display the databases and their connection counts in the console.
+     * Display the queue sizes in the console.
      *
-     * @param  \Illuminate\Support\Collection  $databases
+     * @param  \Illuminate\Support\Collection  $queues
      * @return void
      */
-    protected function displayConnections($databases)
+    protected function displaySizes(Collection $queues)
     {
         $this->newLine();
 
-        $this->components->twoColumnDetail('<fg=gray>Database name</>', '<fg=gray>Connections</>');
+        $this->components->twoColumnDetail('<fg=gray>Queue name</>', '<fg=gray>Size / Status</>');
 
-        $databases->each(function ($database) {
-            $status = '['.$database['connections'].'] '.$database['status'];
+        $queues->each(function ($queue) {
+            $name = '['.$queue['connection'].'] '.$queue['queue'];
+            $status = '['.$queue['size'].'] '.$queue['status'];
 
-            $this->components->twoColumnDetail($database['database'], $status);
+            $this->components->twoColumnDetail($name, $status);
         });
 
         $this->newLine();
     }
 
     /**
-     * Dispatch the database monitoring events.
+     * Fire the monitoring events.
      *
-     * @param  \Illuminate\Support\Collection  $databases
+     * @param  \Illuminate\Support\Collection  $queues
      * @return void
      */
-    protected function dispatchEvents($databases)
+    protected function dispatchEvents(Collection $queues)
     {
-        $databases->each(function ($database) {
-            if ($database['status'] === '<fg=green;options=bold>OK</>') {
-                return;
+        foreach ($queues as $queue) {
+            if ($queue['status'] == '<fg=green;options=bold>OK</>') {
+                continue;
             }
 
             $this->events->dispatch(
-                new DatabaseBusy(
-                    $database['database'],
-                    $database['connections']
+                new QueueBusy(
+                    $queue['connection'],
+                    $queue['queue'],
+                    $queue['size'],
                 )
             );
-        });
+        }
     }
 }
