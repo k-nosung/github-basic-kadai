@@ -2,8 +2,13 @@
 <psalm
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
-    xsi:schemaLocation="https://getpsalm.org/schema/config ./vendor/vimeo/psalm/config.xsd"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    cacheDirectory=".build/psalm/"
     errorBaseline="psalm.baseline.xml"
+    errorLevel="5"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
+    resolveFromConfigFile="true"
 >
     <projectFiles>
         <directory name="src" />
@@ -11,13 +16,4 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
-
-    <issueHandlers>
-        <DeprecatedMethod>
-            <errorLevel type="suppress">
-                <!-- This issue needs to be resolved before upgrading to Lexer 3 -->
-                <referencedMethod name="Doctrine\Common\Lexer\Token::offsetGet"/>
-            </errorLevel>
-        </DeprecatedMethod>
-    </issueHandlers>
 </psalm>
